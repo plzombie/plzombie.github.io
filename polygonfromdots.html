@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Рисования линий, заполнения областей на растре, аффинные преобразования и другая магия</title>
+<title>Рисование линий, заполнение областей на растре, аффинные преобразования и другая магия</title>
 <script type="text/javascript">
 	var cavnas1, context1, canvas2, context2, canvas3, context3;
 	var width, height;
@@ -12,6 +12,9 @@
 	var pathpos = 0; // Позиция в пути
 	var polygon_bordercolor = "rgba(0, 0, 0, 255)";
 	var polygon_fillcolor = "rgba(64, 255, 128, 255)";
+	var timer_step = 50; // Шаг таймера
+	var delta_path = 0.05; // Скорость перемещения между узлами за шаг таймера
+	var delta_a = 0.157; // Скорость изменения угла (в радианах) за шаг таймера
 	// Очищает данные и перерисовывает изображения
 	function RedrawMyImages() {
 		points = { isDotGrabbed: 0, data: [] };
@@ -140,8 +143,8 @@
 		context2.fillRect(0, 0, width, height);
 		DrawLines(context2, path, "rgb(255, 128, 255)");
 		DrawPolygon(context2, points, CalculatePolygonPosition(), rotangle, polygon_bordercolor, polygon_fillcolor);
-		rotangle += 0.157;
-		pathpos += 0.05;
+		rotangle += delta_a;
+		pathpos += delta_path;
 	}
 	// Добавляет в dots точку, на которую вы указали. Здесь event - событие, canvas - холст, на который вы кликнули
 	function AddClickedDots(event, canvas, context, dots) {
@@ -190,6 +193,16 @@
 	function ChangeFillColor() {
 		polygon_fillcolor = document.getElementById('fillcolor').value;
 	}
+	function ChangeDeltaAngle() {
+		var temp = parseFloat(document.getElementById('deltaangle').value);
+		if(!isNaN(temp)) delta_a = temp;
+		document.getElementById('deltaangle').value = delta_a;
+	}
+	function ChangeDeltaPath() {
+		var temp = parseFloat(document.getElementById('deltapath').value);
+		if(!isNaN(temp)) delta_path = temp;
+		document.getElementById('deltapath').value = delta_path;
+	}
 	window.onload = function () {
 		canvas1 = document.getElementById('canvas1');
 		context1 = canvas1.getContext('2d');
@@ -213,8 +226,10 @@
 		
 		document.getElementById('bordercolor').value = polygon_bordercolor;
 		document.getElementById('fillcolor').value = polygon_fillcolor;
+		document.getElementById('deltaangle').value = delta_a;
+		document.getElementById('deltapath').value = delta_path;
 		
-		setInterval("DrawScene();", 50);
+		setInterval("DrawScene();", timer_step);
 	}
 </script>
 </head>
@@ -229,12 +244,18 @@
 	<td><button onclick="RedrawMyImages();">Очистить</button></td>
 	<td colspan="2">
 		<p style="text-align:left">
-		Граница:<input type="text" id="bordercolor" value="rgba(0, 0, 0, 255)" style="width:200px">
+		Граница:<input type="text" id="bordercolor" value="" style="width:200px">
 		<button onclick="ChangeBorderColor();">Изменить</button>
 		</p>
 		<p style="text-align:left">
-		Заливка:<input type="text" id="fillcolor" value="rgba(0, 0, 0, 255)" style="width:200px">
+		Заливка:<input type="text" id="fillcolor" value="" style="width:200px">
 		<button onclick="ChangeFillColor();">Изменить</button>
+		<p style="text-align:left">
+		delta angle:<input type="number" id="deltaangle" value="0" step="0.01" style="width:80px">
+		<button onclick="ChangeDeltaAngle();">Изменить</button>
+		<p style="text-align:left">
+		delta path:<input type="number" id="deltapath" value="0" step="0.01" style="width:80px">
+		<button onclick="ChangeDeltaPath();">Изменить</button>
 		</p>
 	</td>
 </tr>
@@ -243,5 +264,7 @@
 <p>На Path - точки пути, по которому движется фигура</p>
 <p>На Result рисуется итоговое изображение</p>
 <p>Чтобы переместить точку, нужно кликнуть на неё, затем кликнуть на новую позицию</p>
+<p>delta angle - угол, на который поворачивается фигура за один шаг (длина шага - 50мс)</p>
+<p>delta path - интервал между точками пути, который проходит фигура за один шаг</p>
 </body>
 </html>
